@@ -1,0 +1,9 @@
+{
+  "name": "sorted-tags-extension",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/sorted-tags-extension/src",
+  "projectType": "application",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project sorted-tags-extension --web",
+  "targets": {}
+}
