@@ -3,7 +3,7 @@
     "name": "Tab Sorter",
     "version": "1.0",
     "description": "Sort and manage your browser tabs",
-    "permissions": ["tabs"],
+    "permissions": ["tabs", "storage"],
     "action": {
       "default_popup": "index.html",
       "default_icon": {
