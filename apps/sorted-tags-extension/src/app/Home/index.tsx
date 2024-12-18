@@ -1,5 +1,20 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Button, List, Typography, Container, Select, MenuItem, Box } from '@mui/material';
+import {
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Typography,
+  Container,
+  Select,
+  MenuItem,
+  Box,
+  Divider,
+  ListItemAvatar,
+  Avatar,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 type ChromeTab = chrome.tabs.Tab;
 
@@ -16,16 +31,19 @@ function App() {
     }
   }, []);
 
-  const extractDomains = useCallback((tabs: ChromeTab[]) => {
-    const uniqueDomains = Array.from(
-      new Set(
-        tabs
-          .map((tab) => getDomainFromURL(tab.url || ''))
-          .filter((domain) => domain !== '')
-      )
-    );
-    setDomains(uniqueDomains);
-  }, [getDomainFromURL]);
+  const extractDomains = useCallback(
+    (tabs: ChromeTab[]) => {
+      const uniqueDomains = Array.from(
+        new Set(
+          tabs
+            .map((tab) => getDomainFromURL(tab.url || ''))
+            .filter((domain) => domain !== '')
+        )
+      );
+      setDomains(uniqueDomains);
+    },
+    [getDomainFromURL]
+  );
 
   const fetchTabs = useCallback(() => {
     chrome.tabs.query({ currentWindow: true }, (tabs) => {
@@ -55,8 +73,54 @@ function App() {
         const indexA = priorityDomains.indexOf(domainA);
         const indexB = priorityDomains.indexOf(domainB);
 
-        return (indexA !== -1 ? indexA : domains.length) - (indexB !== -1 ? indexB : domains.length);
+        return (
+          (indexA !== -1 ? indexA : domains.length) -
+          (indexB !== -1 ? indexB : domains.length)
+        );
       });
+
+      sortedTabs.forEach((tab, index) => {
+        if (tab.id !== undefined) {
+          chrome.tabs.move(tab.id, { index });
+        }
+      });
+
+      setTabs(sortedTabs);
+    });
+  };
+
+  const sortNonPriorityTabsAlphabetically = () => {
+    chrome.tabs.query({ currentWindow: true }, (tabs) => {
+      // Separate tabs into priority and non-priority
+      const priorityTabs: ChromeTab[] = [];
+      const nonPriorityTabs: ChromeTab[] = [];
+
+      tabs.forEach((tab) => {
+        const domain = getDomainFromURL(tab.url || '');
+        if (priorityDomains.includes(domain)) {
+          priorityTabs.push(tab);
+        } else {
+          nonPriorityTabs.push(tab);
+        }
+      });
+
+      // Sort priority tabs in the order of priority domains
+      priorityTabs.sort((a, b) => {
+        const domainA = getDomainFromURL(a.url || '');
+        const domainB = getDomainFromURL(b.url || '');
+        const indexA = priorityDomains.indexOf(domainA);
+        const indexB = priorityDomains.indexOf(domainB);
+        return indexA - indexB;
+      });
+
+      // Sort non-priority tabs alphabetically by their domain
+      nonPriorityTabs.sort((a, b) => {
+        const domainA = getDomainFromURL(a.url || '');
+        const domainB = getDomainFromURL(b.url || '');
+        return domainA.localeCompare(domainB);
+      });
+
+      const sortedTabs = [...priorityTabs, ...nonPriorityTabs];
 
       sortedTabs.forEach((tab, index) => {
         if (tab.id !== undefined) {
@@ -74,7 +138,7 @@ function App() {
   };
 
   const closeTab = (tabId: number | undefined) => {
-    if(!tabId) return;
+    if (!tabId) return;
     chrome.tabs.remove(tabId, () => {
       fetchTabs();
     });
@@ -86,49 +150,170 @@ function App() {
   }, [fetchTabs, loadPriorityDomains]);
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>
-        Tab Sorter by Domain
-      </Typography>
-      <Box className="mb-4">
-        <Typography variant="h6">Select Domains to Prioritize</Typography>
-        <Select
-          multiple
-          value={priorityDomains}
-          onChange={(e) => handleDomainSelection(e.target.value as string[])}
-          renderValue={(selected) => selected.join(', ')}
-          fullWidth
+    <Box sx={{ backgroundColor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="md" sx={{ color: '#000' }}>
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Tab Sorter by Domain
+        </Typography>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            Select Domains to Prioritize
+          </Typography>
+          <Select
+            multiple
+            value={priorityDomains}
+            onChange={(e) => handleDomainSelection(e.target.value as string[])}
+            renderValue={(selected) => selected.join(', ')}
+            fullWidth
+            sx={{
+              borderColor: '#aaa',
+              '.MuiOutlinedInput-notchedOutline': {
+                borderColor: '#aaa',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#777',
+              },
+            }}
+          >
+            {domains.map((domain) => (
+              <MenuItem key={domain} value={domain}>
+                {domain}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+
+        <Divider sx={{ my: 2, borderColor: '#aaa' }} />
+
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={sortTabsByDomain}
+            sx={{
+              borderColor: '#aaa',
+              color: '#000',
+              ':hover': {
+                backgroundColor: '#eee',
+                borderColor: '#777',
+              },
+            }}
+          >
+            Sort Priority Tabs
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={sortNonPriorityTabsAlphabetically}
+            sx={{
+              borderColor: '#aaa',
+              color: '#000',
+              ':hover': {
+                backgroundColor: '#eee',
+                borderColor: '#777',
+              },
+            }}
+          >
+            Sort Non-Priority Tabs (A–Z)
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={fetchTabs}
+            sx={{
+              borderColor: '#aaa',
+              color: '#000',
+              ':hover': {
+                backgroundColor: '#eee',
+                borderColor: '#777',
+              },
+            }}
+          >
+            Refresh Tabs
+          </Button>
+        </Box>
+
+        <Divider sx={{ my: 2, borderColor: '#aaa' }} />
+
+        <Typography variant="h6" gutterBottom>
+          Open Tabs
+        </Typography>
+
+        <List
+          sx={{
+            bgcolor: '#fff',
+            border: '1px solid #aaa',
+            borderRadius: 1,
+          }}
         >
-          {domains.map((domain) => (
-            <MenuItem key={domain} value={domain}>
-              {domain}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
-      <Button variant="contained" color="primary" onClick={sortTabsByDomain} className="mr-2">
-        Sort Tabs by Domain
-      </Button>
-      <Button variant="outlined" color="secondary" onClick={fetchTabs}>
-        Refresh Tabs
-      </Button>
-      <List>
-        {tabs.map((tab) => (
-          <li key={tab.id} className="flex items-center justify-between border-b py-2">
-            <div>
-              <p className="font-medium">{tab.title}</p>
-              <p className="text-sm text-gray-500 truncate max-w-md">{tab.url}</p>
-            </div>
-            <button
-              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-              onClick={() => closeTab(tab.id)}
+          {tabs.map((tab) => {
+            const domain = getDomainFromURL(tab.url || '');
+            return (
+              <ListItem
+                key={tab.id}
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    onClick={() => closeTab(tab.id)}
+                    sx={{
+                      color: '#000',
+                      ':hover': { backgroundColor: '#f0f0f0' },
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                }
+                sx={{
+                  '&:not(:last-child)': {
+                    borderBottom: '1px solid #aaa',
+                  },
+                }}
+              >
+                {tab.favIconUrl && (
+                  <ListItemAvatar>
+                    <Avatar
+                      src={tab.favIconUrl}
+                      alt="Tab icon"
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        bgcolor: '#fff',
+                      }}
+                    />
+                  </ListItemAvatar>
+                )}
+                <ListItemText
+                  primary={tab.title}
+                  secondary={tab.url}
+                  primaryTypographyProps={{
+                    variant: 'subtitle1',
+                    noWrap: true,
+                    sx: { color: '#000' },
+                  }}
+                  secondaryTypographyProps={{
+                    variant: 'body2',
+                    noWrap: true,
+                    sx: { color: '#555' },
+                  }}
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="caption" sx={{ color: '#555' }} component="div">
+            <a
+              href="https://www.flaticon.com/free-icons/tabs"
+              title="tabs icons"
+              style={{ color: '#555', textDecoration: 'none' }}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Close
-            </button>
-          </li>
-        ))}
-      </List>
-    </Container>
+              Tabs icons created by Pixel perfect - Flaticon
+            </a>
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 

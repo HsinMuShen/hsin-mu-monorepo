@@ -1,15 +1,15 @@
 {
     "manifest_version": 3,
-    "name": "Tab Sorter",
-    "version": "1.0",
+    "name": "Tabs Sorter",
+    "version": "0.1.0",
     "description": "Sort and manage your browser tabs",
     "permissions": ["tabs", "storage"],
     "action": {
       "default_popup": "index.html",
       "default_icon": {
-        "16": "icons/tag.png",
-        "48": "icons/tag.png",
-        "128": "icons/tag.png"
+        "16": "icons/web-browser.png",
+        "48": "icons/web-browser.png",
+        "128": "icons/web-browser.png"
       }
     }
   }
