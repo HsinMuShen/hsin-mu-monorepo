@@ -67,6 +67,18 @@
         "linter": "eslint",
         "unitTestRunner": "jest"
       }
+    },
+    "@nrwl/workspace": {
+      "format": {
+        "script": "prettier --write"
+      }
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "options": {
+        "cacheableOperations": ["format"]
+      }
     }
   }
 }
