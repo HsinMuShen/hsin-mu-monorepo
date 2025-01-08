@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "jsx": "react-jsx",
     "allowJs": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "baseUrl": "."
   },
   "files": [],
   "include": [],
