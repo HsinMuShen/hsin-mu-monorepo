@@ -2,11 +2,17 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import imagesLoaded, { ImagesLoaded } from 'imagesloaded';
+import { sketchingImages } from './constants';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const HomeComponent: React.FC = () => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
+
+  const randomImages = sketchingImages.sort(() => Math.random() - 0.5);
+  const getImage = async () => {
+    return await Promise.all(randomImages);
+  };
 
   useEffect(() => {
     const images = Array.from(
@@ -33,8 +39,8 @@ const HomeComponent: React.FC = () => {
 
         const [x, xEnd] =
           index % 2
-            ? ['100%', (wrapper.scrollWidth - section.offsetWidth) * -1]
-            : [wrapper.scrollWidth * -1, 0];
+            ? [wrapper.scrollWidth * -1, 0]
+            : ['100%', (wrapper.scrollWidth - section.offsetWidth) * -1];
 
         gsap.fromTo(
           wrapper,
@@ -69,37 +75,36 @@ const HomeComponent: React.FC = () => {
       <div className="demo-wrapper overflow-x-hidden">
         <header className="h-screen flex items-center justify-center">
           <div>
-            <h1 className="text-5xl font-bold">ScrollTrigger</h1>
-            <h2 className="text-2xl">demo</h2>
+            <h1 className="text-5xl font-bold">Hi I am Michael Shen</h1>
+            <h2 className="text-2xl">
+              A software engineer and also a sketching artist
+            </h2>
+            <h3>Scroll down to see all my works</h3>
           </div>
         </header>
 
         {/* Sections */}
         <section className="demo-text">
           <div className="wrapper text flex text-[clamp(8rem,15vw,16rem)] font-black whitespace-nowrap">
-            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+            My sketching artworks
           </div>
         </section>
 
         {[...Array(4)].map((_, i) => (
           <section className="demo-gallery py-4" key={i}>
             <ul className="wrapper flex space-x-4">
-              {[...Array(Math.floor(Math.random() * (4 - 3 + 1)) + 3)].map(
-                (_, j) => (
-                  <li
-                    key={j}
-                    className="flex-shrink-0 w-[clamp(500px,60vw,800px)]"
-                  >
-                    <img
-                      src={`https://source.unsplash.com/random/1240x874?sig=${
-                        Math.random() * 200
-                      }`}
-                      alt="Random Unsplash"
-                      className="w-full h-auto bg-gray-200"
-                    />
-                  </li>
-                ),
-              )}
+              {randomImages.map((image, index) => (
+                <li
+                  key={index}
+                  className="flex-shrink-0 w-[clamp(500px,60vw,800px)]"
+                >
+                  <img
+                    src={image}
+                    alt="Random Unsplash"
+                    className="w-full h-auto bg-gray-200"
+                  />
+                </li>
+              ))}
             </ul>
           </section>
         ))}
@@ -109,15 +114,6 @@ const HomeComponent: React.FC = () => {
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
           </div>
         </section>
-
-        <footer className="h-[50vh] flex items-center justify-center">
-          <p>
-            Images from{' '}
-            <a href="https://unsplash.com/" className="text-green-700">
-              Unsplash
-            </a>
-          </p>
-        </footer>
       </div>
     </div>
   );

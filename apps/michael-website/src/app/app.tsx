@@ -1,21 +1,10 @@
 import { Route, Routes, Link } from 'react-router-dom';
 import Home from '../pages/Home';
+import Footer from '@/components/Footer';
+
 export function App() {
   return (
     <div>
-      <br />
-      <hr />
-      <br />
-      <div role="navigation">
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/page-2">Page 2</Link>
-          </li>
-        </ul>
-      </div>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route
@@ -27,6 +16,7 @@ export function App() {
           }
         />
       </Routes>
+      <Footer />
     </div>
   );
 }
