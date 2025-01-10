@@ -23,103 +23,68 @@ function Popup() {
   const [domains, setDomains] = useState<string[]>([]);
   const [priorityDomains, setPriorityDomains] = useState<string[]>([]);
 
-  const getDomainFromURL = useCallback((url: string) => {
-    try {
-      return new URL(url).hostname;
-    } catch {
-      return '';
-    }
-  }, []);
-
-  const extractDomains = useCallback(
-    (tabs: ChromeTab[]) => {
-      const uniqueDomains = Array.from(
-        new Set([
-          ...tabs
-            .map((tab) => getDomainFromURL(tab.url || ''))
-            .filter((domain) => domain !== ''),
-          ...priorityDomains, // Ensure priority domains are preserved
-        ]),
-      );
-      setDomains(uniqueDomains);
-    },
-    [getDomainFromURL, priorityDomains],
-  );
-
   const fetchTabs = useCallback(() => {
-    chrome.tabs.query({ currentWindow: true }, (tabs) => {
-      setTabs(tabs);
-      extractDomains(tabs);
+    chrome.runtime.sendMessage({ type: 'FETCH_TABS' }, (response) => {
+      if (!response?.success) return;
+
+      setTabs(response.tabs);
+      const uniqueDomains = Array.from(
+        new Set(
+          response.tabs
+            .map((tab: ChromeTab) => {
+              try {
+                return new URL(tab.url ?? '').hostname;
+              } catch {
+                return '';
+              }
+            })
+            .filter((d: string) => d !== ''),
+        ),
+      );
+
+      const mergedDomains = Array.from(
+        new Set([...uniqueDomains, ...priorityDomains]),
+      ) as string[];
+
+      setDomains(mergedDomains);
     });
-  }, [extractDomains]);
+  }, [priorityDomains]);
 
   const loadPriorityDomains = useCallback(() => {
-    chrome.storage.local.get('priorityDomains', (data) => {
-      if (data.priorityDomains) {
-        setPriorityDomains(data.priorityDomains);
-      }
-    });
+    chrome.runtime.sendMessage(
+      { type: 'LOAD_PRIORITY_DOMAINS' },
+      (response) => {
+        if (!response?.success) return;
+        setPriorityDomains(response.priorityDomains);
+      },
+    );
   }, []);
 
-  const savePriorityDomains = (selectedDomains: string[]) => {
-    chrome.storage.local.set({ priorityDomains: selectedDomains });
+  const savePriorityDomains = (selected: string[]) => {
+    chrome.runtime.sendMessage(
+      { type: 'SAVE_PRIORITY_DOMAINS', payload: selected },
+      (response) => {
+        if (!response?.success) return;
+        console.log('Priority domains saved.');
+      },
+    );
   };
 
   const sortTabsByDomain = () => {
-    chrome.tabs.query({ currentWindow: true }, (tabs) => {
-      const sortedTabs = [...tabs].sort((a, b) => {
-        const domainA = getDomainFromURL(a.url || '');
-        const domainB = getDomainFromURL(b.url || '');
-
-        const indexA = priorityDomains.indexOf(domainA);
-        const indexB = priorityDomains.indexOf(domainB);
-
-        return (
-          (indexA !== -1 ? indexA : domains.length) -
-          (indexB !== -1 ? indexB : domains.length)
-        );
-      });
-
-      sortedTabs.forEach((tab, index) => {
-        if (tab.id !== undefined) {
-          chrome.tabs.move(tab.id, { index });
-        }
-      });
-
-      setTabs(sortedTabs);
+    chrome.runtime.sendMessage({ type: 'SORT_TABS_BY_DOMAIN' }, (response) => {
+      if (!response?.success) return;
+      setTabs(response.tabs);
     });
   };
 
   const sortNonPriorityTabsAlphabetically = () => {
-    chrome.tabs.query({ currentWindow: true }, (tabs) => {
-      const priorityTabs: ChromeTab[] = [];
-      const nonPriorityTabs: ChromeTab[] = [];
-
-      tabs.forEach((tab) => {
-        const domain = getDomainFromURL(tab.url || '');
-        if (priorityDomains.includes(domain)) {
-          priorityTabs.push(tab);
-        } else {
-          nonPriorityTabs.push(tab);
-        }
-      });
-
-      nonPriorityTabs.sort((a, b) => {
-        const domainA = getDomainFromURL(a.url || '');
-        const domainB = getDomainFromURL(b.url || '');
-        return domainA.localeCompare(domainB);
-      });
-
-      const sortedTabs = [...priorityTabs, ...nonPriorityTabs];
-
-      sortedTabs.forEach((tab, index) => {
-        if (tab.id !== undefined) {
-          chrome.tabs.move(tab.id, { index });
-        }
-      });
-
-      setTabs(sortedTabs);
-    });
+    chrome.runtime.sendMessage(
+      { type: 'SORT_NON_PRIORITY_TABS_ALPHABETICALLY' },
+      (response) => {
+        if (!response?.success) return;
+        setTabs(response.tabs);
+      },
+    );
   };
 
   const handleDomainSelection = (selectedDomains: string[]) => {
@@ -129,15 +94,18 @@ function Popup() {
 
   const closeTab = (tabId: number | undefined) => {
     if (!tabId) return;
-    chrome.tabs.remove(tabId, () => {
+    chrome.runtime.sendMessage({ type: 'CLOSE_TAB', payload: tabId }, () => {
       fetchTabs();
     });
   };
 
   useEffect(() => {
-    fetchTabs();
     loadPriorityDomains();
-  }, [fetchTabs, loadPriorityDomains]);
+  }, [loadPriorityDomains]);
+
+  useEffect(() => {
+    fetchTabs();
+  }, [priorityDomains, fetchTabs]);
 
   return (
     <Box
@@ -208,7 +176,6 @@ function Popup() {
           sx={{ bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1 }}
         >
           {tabs.map((tab) => {
-            const domain = getDomainFromURL(tab.url || '');
             return (
               <ListItem
                 key={tab.id}
