@@ -3,6 +3,19 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log('Extension installed or updated!');
 });
 
+const tabOpenTimes: Record<number, number> = {};
+
+// Listen for new tabs and record their open time
+chrome.tabs.onCreated.addListener((tab) => {
+  if (tab.id === undefined) return;
+  tabOpenTimes[tab.id] = Date.now();
+});
+
+// Listen for tab closures to clean up the map
+chrome.tabs.onRemoved.addListener((tabId) => {
+  delete tabOpenTimes[tabId];
+});
+
 /** Helper to get domain from a URL string */
 function getDomainFromURL(url: string): string {
   try {
@@ -116,6 +129,41 @@ async function sortNonPriorityTabsAlphabetically() {
   return sortedTabs;
 }
 
+async function sortNonPriorityTabsByOpenTime() {
+  const tabs = await fetchTabs();
+  const priorityDomains = await loadPriorityDomains();
+
+  const priorityTabs: chrome.tabs.Tab[] = [];
+  const nonPriorityTabs: chrome.tabs.Tab[] = [];
+
+  tabs.forEach((tab) => {
+    const domain = getDomainFromURL(tab.url || '');
+    if (priorityDomains.includes(domain)) {
+      priorityTabs.push(tab);
+    } else {
+      nonPriorityTabs.push(tab);
+    }
+  });
+
+  // Sort non-priority tabs by open time
+  nonPriorityTabs.sort((a, b) => {
+    const openTimeA = tabOpenTimes[a.id ?? 0] || 0;
+    const openTimeB = tabOpenTimes[b.id ?? 0] || 0;
+    return openTimeA - openTimeB;
+  });
+
+  const sortedTabs = [...priorityTabs, ...nonPriorityTabs];
+
+  // Reposition the tabs
+  sortedTabs.forEach((tab, index) => {
+    if (tab.id !== undefined) {
+      chrome.tabs.move(tab.id, { index });
+    }
+  });
+
+  return sortedTabs;
+}
+
 /** Close a particular tab by ID */
 async function closeTab(tabId: number) {
   return new Promise<void>((resolve) => {
@@ -152,9 +200,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ success: true, tabs: sortedTabs });
         break;
       }
+      case 'SORT_NON_PRIORITY_TABS_BY_OPEN_TIME': {
+        const sortedTabs = await sortNonPriorityTabsByOpenTime();
+        sendResponse({ success: true, tabs: sortedTabs });
+        break;
+      }
       case 'CLOSE_TAB': {
         await closeTab(request.payload); // tabId
         sendResponse({ success: true });
+        break;
+      }
+      case 'GET_TAB_OPEN_TIMES': {
+        sendResponse({ success: true, tabOpenTimes });
         break;
       }
       default:

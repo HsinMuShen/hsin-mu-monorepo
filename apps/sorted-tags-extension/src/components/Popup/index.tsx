@@ -10,6 +10,7 @@ export function Popup() {
   const [tabs, setTabs] = useState<ChromeTab[]>([]);
   const [domains, setDomains] = useState<string[]>([]);
   const [priorityDomains, setPriorityDomains] = useState<string[]>([]);
+  const [tabOpenTimes, setTabOpenTimes] = useState<Record<number, number>>({});
 
   const fetchTabs = useCallback(() => {
     chrome.runtime.sendMessage({ type: 'FETCH_TABS' }, (response) => {
@@ -47,6 +48,13 @@ export function Popup() {
     );
   }, []);
 
+  const fetchTabOpenTimes = useCallback(() => {
+    chrome.runtime.sendMessage({ type: 'GET_TAB_OPEN_TIMES' }, (response) => {
+      if (!response?.success) return;
+      setTabOpenTimes(response.tabOpenTimes);
+    });
+  }, []);
+
   const savePriorityDomains = (selected: string[]) => {
     chrome.runtime.sendMessage(
       { type: 'SAVE_PRIORITY_DOMAINS', payload: selected },
@@ -74,6 +82,16 @@ export function Popup() {
     );
   };
 
+  const sortNonPriorityTabsByOpenTime = () => {
+    chrome.runtime.sendMessage(
+      { type: 'SORT_NON_PRIORITY_TABS_BY_OPEN_TIME' },
+      (response) => {
+        if (!response?.success) return;
+        setTabs(response.tabs);
+      },
+    );
+  };
+
   const handleDomainSelection = (selectedDomains: string[]) => {
     setPriorityDomains(selectedDomains);
     savePriorityDomains(selectedDomains);
@@ -88,7 +106,8 @@ export function Popup() {
 
   useEffect(() => {
     loadPriorityDomains();
-  }, [loadPriorityDomains]);
+    fetchTabOpenTimes();
+  }, [loadPriorityDomains, fetchTabOpenTimes]);
 
   useEffect(() => {
     fetchTabs();
@@ -119,6 +138,7 @@ export function Popup() {
         <SortingButtons
           onSortPriority={sortTabsByDomain}
           onSortNonPriority={sortNonPriorityTabsAlphabetically}
+          onSortByOpenTime={sortNonPriorityTabsByOpenTime}
           onRefreshTabs={fetchTabs}
         />
 
@@ -128,7 +148,11 @@ export function Popup() {
           Open Tabs
         </Typography>
 
-        <TabList tabs={tabs} onCloseTab={closeTab} />
+        <TabList
+          tabs={tabs}
+          tabOpenTimes={tabOpenTimes}
+          onCloseTab={closeTab}
+        />
       </Container>
     </Box>
   );
