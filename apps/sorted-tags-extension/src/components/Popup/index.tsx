@@ -18,7 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 type ChromeTab = chrome.tabs.Tab;
 
-function App() {
+function Popup() {
   const [tabs, setTabs] = useState<ChromeTab[]>([]);
   const [domains, setDomains] = useState<string[]>([]);
   const [priorityDomains, setPriorityDomains] = useState<string[]>([]);
@@ -35,13 +35,15 @@ function App() {
     (tabs: ChromeTab[]) => {
       const uniqueDomains = Array.from(
         new Set([
-          ...tabs.map((tab) => getDomainFromURL(tab.url || '')).filter((domain) => domain !== ''),
+          ...tabs
+            .map((tab) => getDomainFromURL(tab.url || ''))
+            .filter((domain) => domain !== ''),
           ...priorityDomains, // Ensure priority domains are preserved
-        ])
+        ]),
       );
       setDomains(uniqueDomains);
     },
-    [getDomainFromURL, priorityDomains]
+    [getDomainFromURL, priorityDomains],
   );
 
   const fetchTabs = useCallback(() => {
@@ -72,7 +74,10 @@ function App() {
         const indexA = priorityDomains.indexOf(domainA);
         const indexB = priorityDomains.indexOf(domainB);
 
-        return (indexA !== -1 ? indexA : domains.length) - (indexB !== -1 ? indexB : domains.length);
+        return (
+          (indexA !== -1 ? indexA : domains.length) -
+          (indexB !== -1 ? indexB : domains.length)
+        );
       });
 
       sortedTabs.forEach((tab, index) => {
@@ -135,7 +140,14 @@ function App() {
   }, [fetchTabs, loadPriorityDomains]);
 
   return (
-    <Box sx={{ backgroundColor: '#f5f5f5', minHeight: '100vh', py: 4, minWidth: '640px' }}>
+    <Box
+      sx={{
+        backgroundColor: '#f5f5f5',
+        minHeight: '100vh',
+        py: 4,
+        minWidth: '640px',
+      }}
+    >
       <Container maxWidth="md" sx={{ color: '#000' }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
           Tabs Sorter
@@ -163,13 +175,25 @@ function App() {
         <Divider sx={{ my: 2 }} />
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Button variant="outlined" onClick={sortTabsByDomain} sx={{ fontSize: '0.75rem' }}>
+          <Button
+            variant="outlined"
+            onClick={sortTabsByDomain}
+            sx={{ fontSize: '0.75rem' }}
+          >
             Sort Priority Tabs
           </Button>
-          <Button variant="outlined" onClick={sortNonPriorityTabsAlphabetically} sx={{ fontSize: '0.75rem' }}>
+          <Button
+            variant="outlined"
+            onClick={sortNonPriorityTabsAlphabetically}
+            sx={{ fontSize: '0.75rem' }}
+          >
             Sort Non-Priority Tabs (A–Z)
           </Button>
-          <Button variant="outlined" onClick={fetchTabs} sx={{ fontSize: '0.75rem' }}>
+          <Button
+            variant="outlined"
+            onClick={fetchTabs}
+            sx={{ fontSize: '0.75rem' }}
+          >
             Refresh Tabs
           </Button>
         </Box>
@@ -180,7 +204,9 @@ function App() {
           Open Tabs
         </Typography>
 
-        <List sx={{ bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1 }}>
+        <List
+          sx={{ bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1 }}
+        >
           {tabs.map((tab) => {
             const domain = getDomainFromURL(tab.url || '');
             return (
@@ -208,4 +234,4 @@ function App() {
   );
 }
 
-export default App;
+export default Popup;

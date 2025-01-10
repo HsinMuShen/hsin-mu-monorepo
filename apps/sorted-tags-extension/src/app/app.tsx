@@ -1,8 +1,9 @@
-import Home from './Home';
+import Popup from '@/components/Popup';
+
 export function App() {
   return (
     <div>
-      <Home />
+      <Popup />
     </div>
   );
 }
