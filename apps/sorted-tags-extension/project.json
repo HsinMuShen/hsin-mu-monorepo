@@ -5,5 +5,13 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project sorted-tags-extension --web",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "options": {
+        "configFile": "apps/sorted-tags-extension/vite.config.ts",
+        "outputPath": "apps/sorted-tags-extension/dist/sorted-tags-extension"
+      }
+    }
+  }
 }

@@ -33,5 +33,20 @@ export default defineConfig({
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+    rollupOptions: {
+      // Here we define multiple entry points: one for the popup (index.html) and one for the background script.
+      input: {
+        popup: path.resolve(__dirname, 'index.html'),
+        background: path.resolve(__dirname, 'src/background.ts'),
+      },
+      output: {
+        // We want the background script to be named "background.js" in the final build.
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'background'
+            ? 'background.js'
+            : 'assets/[name].js';
+        },
+      },
+    },
   },
 });
