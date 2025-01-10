@@ -55,7 +55,7 @@ export function TabList({ tabs, tabOpenTimes, onCloseTab }: TabListProps) {
 
   return (
     <List sx={{ bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1 }}>
-      {tabs.map((tab) => (
+      {tabs.map((tab, index) => (
         <ListItem
           key={tab.id}
           secondaryAction={
@@ -63,7 +63,9 @@ export function TabList({ tabs, tabOpenTimes, onCloseTab }: TabListProps) {
               <CloseIcon />
             </IconButton>
           }
-          sx={{ borderBottom: '1px solid #ddd' }}
+          sx={{
+            borderBottom: index === tabs.length - 1 ? 'none' : '1px solid #ddd',
+          }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Box

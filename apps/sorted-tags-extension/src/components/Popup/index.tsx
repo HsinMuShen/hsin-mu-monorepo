@@ -118,11 +118,11 @@ export function Popup() {
       sx={{
         backgroundColor: '#f5f5f5',
         minHeight: '100vh',
-        py: 4,
+        pt: 4,
         minWidth: '640px',
       }}
     >
-      <Container maxWidth="md" sx={{ color: '#000' }}>
+      <Container maxWidth="md" sx={{ color: '#000', pb: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
           Tabs Sorter
         </Typography>
@@ -154,6 +154,32 @@ export function Popup() {
           onCloseTab={closeTab}
         />
       </Container>
+
+      <Box
+        sx={{
+          textAlign: 'center',
+          mt: 2,
+          py: 1,
+          backgroundColor: '#e0e0e0',
+          borderTop: '1px solid #ccc',
+        }}
+      >
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: '0.75rem' }}
+        >
+          {`Tabs icons created by `}
+          <a
+            href="https://www.flaticon.com/authors/pixel-perfect"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'inherit', textDecoration: 'none' }}
+          >
+            {'Pixel perfect - Flaticon'}
+          </a>
+        </Typography>
+      </Box>
     </Box>
   );
 }
