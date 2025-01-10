@@ -1,24 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import {
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Typography,
-  Container,
-  Select,
-  MenuItem,
-  Box,
-  Divider,
-  ListItemAvatar,
-  Avatar,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Typography, Container, Box, Divider } from '@mui/material';
+import type { ChromeTab } from '@/type';
 
-type ChromeTab = chrome.tabs.Tab;
+import { DomainSelector } from './components/DomainSelector';
+import { SortingButtons } from './components/SortingButtons';
+import { TabList } from './components/TabList';
 
-function Popup() {
+export function Popup() {
   const [tabs, setTabs] = useState<ChromeTab[]>([]);
   const [domains, setDomains] = useState<string[]>([]);
   const [priorityDomains, setPriorityDomains] = useState<string[]>([]);
@@ -45,7 +33,6 @@ function Popup() {
       const mergedDomains = Array.from(
         new Set([...uniqueDomains, ...priorityDomains]),
       ) as string[];
-
       setDomains(mergedDomains);
     });
   }, [priorityDomains]);
@@ -121,50 +108,19 @@ function Popup() {
           Tabs Sorter
         </Typography>
 
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Select Domains to Prioritize
-          </Typography>
-          <Select
-            multiple
-            value={priorityDomains}
-            onChange={(e) => handleDomainSelection(e.target.value as string[])}
-            renderValue={(selected) => selected.join(', ')}
-            fullWidth
-          >
-            {domains.map((domain) => (
-              <MenuItem key={domain} value={domain}>
-                {domain}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
+        <DomainSelector
+          domains={domains}
+          priorityDomains={priorityDomains}
+          onDomainSelection={handleDomainSelection}
+        />
 
         <Divider sx={{ my: 2 }} />
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={sortTabsByDomain}
-            sx={{ fontSize: '0.75rem' }}
-          >
-            Sort Priority Tabs
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={sortNonPriorityTabsAlphabetically}
-            sx={{ fontSize: '0.75rem' }}
-          >
-            Sort Non-Priority Tabs (A–Z)
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={fetchTabs}
-            sx={{ fontSize: '0.75rem' }}
-          >
-            Refresh Tabs
-          </Button>
-        </Box>
+        <SortingButtons
+          onSortPriority={sortTabsByDomain}
+          onSortNonPriority={sortNonPriorityTabsAlphabetically}
+          onRefreshTabs={fetchTabs}
+        />
 
         <Divider sx={{ my: 2 }} />
 
@@ -172,30 +128,7 @@ function Popup() {
           Open Tabs
         </Typography>
 
-        <List
-          sx={{ bgcolor: '#fff', border: '1px solid #ccc', borderRadius: 1 }}
-        >
-          {tabs.map((tab) => {
-            return (
-              <ListItem
-                key={tab.id}
-                secondaryAction={
-                  <IconButton edge="end" onClick={() => closeTab(tab.id)}>
-                    <CloseIcon />
-                  </IconButton>
-                }
-                sx={{ borderBottom: '1px solid #ddd' }}
-              >
-                {tab.favIconUrl && (
-                  <ListItemAvatar>
-                    <Avatar src={tab.favIconUrl} alt="Tab icon" />
-                  </ListItemAvatar>
-                )}
-                <ListItemText primary={tab.title} secondary={tab.url} />
-              </ListItem>
-            );
-          })}
-        </List>
+        <TabList tabs={tabs} onCloseTab={closeTab} />
       </Container>
     </Box>
   );
