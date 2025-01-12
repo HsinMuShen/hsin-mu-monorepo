@@ -141,3 +141,8 @@ Tired of having dozens or even hundreds of tabs open, feeling overwhelmed, and u
 We hope **Tabs Sorter** saves you time and keeps your tabs manageable. Contributions and suggestions are welcome—please feel free to [open an issue](#) or submit a pull request if you have ideas for improvements or encounter any bugs.
 
 Enjoy your organized tabs!
+
+
+### Contact
+ * [LinkedIn](https://www.linkedin.com/in/hsin-mu-shen/)
+ * <hsinmushen84@email.com>
