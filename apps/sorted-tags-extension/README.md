@@ -21,9 +21,17 @@ Tired of having dozens or even hundreds of tabs open, feeling overwhelmed, and u
 **Key benefits:**
 
 - Quickly identify and reorder tabs by important domains.
+  ![priority](https://github.com/user-attachments/assets/db45f781-d4ec-4e42-a80c-15220e868523)
+
 - Sort other tabs alphabetically or by their open time.
+  ![a-z](https://github.com/user-attachments/assets/e3d05333-b750-4f2c-8cf2-244f69615792)
+
 - See how long a tab has been open, in real time.
+  ![open_time](https://github.com/user-attachments/assets/08fc2187-f9e0-4994-939e-cf030ff08bcf)
+
 - Close tabs with a single click from the popup.
+![delete_tabs](https://github.com/user-attachments/assets/2e14cea7-1367-4988-b3e9-bc5cdd782e8f)
+
 
 ---
 
@@ -47,9 +55,9 @@ Tired of having dozens or even hundreds of tabs open, feeling overwhelmed, and u
    - **Storage API**: Save and load priority domains to/from local storage.
    - **Runtime API**: Communicate between the popup and background scripts.
 
-5. **Vite / Webpack / (any build tool of choice)**
+5. **Vite
 
-   - Typically used to bundle and serve React + TypeScript for Chrome extension development (adjust based on your actual setup).
+   - Typically used to bundle and serve React + TypeScript for Chrome extension development.
 
 ---
 
@@ -79,31 +87,28 @@ Tired of having dozens or even hundreds of tabs open, feeling overwhelmed, and u
 
 ## How to Use
 
-1. **Install / Load the Extension**
+1. **Install the Extension**  
+   - **Option A:** Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/tabs-sorter/jaffcpjmpphlkpehdifhdbfdoeimdmhl).  
+   - **Option B (Unpacked)**:  
+     1. Go to `chrome://extensions`.  
+     2. Enable **Developer mode** (toggle in the top right corner).  
+     3. Click **Load unpacked** and select the folder containing the **Tabs Sorter** extension source files (with the `manifest.json`).  
 
-   - Go to `chrome://extensions`.
-   - Enable **Developer mode** (toggle in the top right corner).
-   - Click **Load unpacked** and select the folder containing the **Tabs Sorter** extension source files (with the `manifest.json`).
-
-2. **Open the Popup**
-
+2. **Open the Popup**  
    - Click on the **Tabs Sorter** extension icon in the Chrome toolbar.
 
-3. **Select Priority Domains**
-
+3. **Select Priority Domains**  
    - In the popup, select which domains you want to prioritize (e.g., `github.com`, `google.com`).
 
-4. **Sort Tabs**
-
-   - **Sort Priority Tabs** – Moves all priority domains to the front.
-   - **Sort Non-Priority Tabs (A–Z)** – Sorts remaining tabs by domain in alphabetical order.
+4. **Sort Tabs**  
+   - **Sort Priority Tabs** – Moves all priority domains to the front.  
+   - **Sort Non-Priority Tabs (A–Z)** – Sorts remaining tabs by domain in alphabetical order.  
    - **Sort Non-Priority Tabs (Open Time)** – Sorts remaining tabs by the time they were opened (oldest first).
 
-5. **Close Tabs**
-
+5. **Close Tabs**  
    - In the **Open Tabs** list, click the **Close** icon to quickly close any tab.
 
-6. **Refresh**
+6. **Refresh**  
    - Use the **Refresh Tabs** button in the popup if you’ve opened/closed tabs outside the extension and want to see the latest state.
 
 ---
